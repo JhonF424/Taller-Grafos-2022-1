@@ -92,3 +92,56 @@ class grafo:
 
     def mayorGrado(self):
         self.obtenerGrado()
+
+    def fuentes(self):
+        listX = []
+
+        for v in self.listaVertices:
+            for a in self.listaAristas:
+                if v.getDato() == a.getDestino():
+                    print(v.getDato(), "no es")
+                    # PENDIENTE DE REVISAR ESTE EJERCICIO
+                else:
+                    listX.append(v.getDato())
+
+        print(listX)
+
+    def promPesos(self):
+        cant = 0
+        total = 0
+
+        for p in self.listaAristas:
+            cant = cant + 1
+            total = total + p.getPeso()
+
+        prom = total / cant
+
+        print("Peso promedio de todas las aristas del grafo: ", prom)
+
+    def mayorPeso(self):
+        pesos = []
+        for p in self.listaAristas:
+            pesos.append(p.getPeso())
+        mayor = max(pesos)
+        # Revisar:  Se hace de esta forma para poder buscar la arista como objeto,
+        #           si se emplea un bucle con posiciones de la lista, solo estaríamos
+        #           iterando sobre una lista de números.
+        for b in self.listaAristas:
+            if mayor == b.getPeso():
+                print("La arista con mayor peso es: ")
+                print(f"{b.getOrigen()} - {b.getPeso()} - {b.getDestino()}")
+
+    def menorPeso(self):
+        pesos = []
+        for p in self.listaAristas:
+            pesos.append(p.getPeso())
+        mayor = min(pesos)
+        # Revisar:  Se hace de esta forma para poder buscar la arista como objeto,
+        #           si se emplea un bucle con posiciones de la lista, solo estaríamos
+        #           iterando sobre una lista de números.
+        for b in self.listaAristas:
+            if mayor == b.getPeso():
+                print("La arista con menor peso es: ")
+                print(f"{b.getOrigen()} - {b.getPeso()} - {b.getDestino()}")
+
+    
