@@ -1,0 +1,22 @@
+from classes.grafo import *
+
+G = grafo()
+
+G.ingresarVertice("Manizales")
+G.ingresarVertice("Pereira")
+G.ingresarVertice("Armenia")
+G.ingresarVertice("Medellin")
+
+# G.mostrarVertices()
+G.ingresarAristas("Manizales", "Pereira", 4)
+G.ingresarAristas("Manizales", "Medellin", 8)
+G.ingresarAristas("Medellin", "Armenia", 6)
+G.ingresarAristas("Pereira", "Armenia", 2)
+
+G.mostrarAristas()
+G.mostrarAdyacencias()
+# G.mostrarPozos()
+# print(G.verificarFuente("Manizales"))
+
+# G.ordenarAristas()
+G.obtenerGrado()
