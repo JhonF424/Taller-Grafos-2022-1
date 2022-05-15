@@ -1,3 +1,5 @@
+from collections import deque
+from copy import copy
 from classes.arista import *
 from classes.vertice import *
 
@@ -6,6 +8,8 @@ class grafo:
     def __init__(self):
         self.listaVertices = []
         self.listaAristas = []
+        self.VisistadosCp = []
+        self.VisistadosCa = []
 
     def ingresarVertice(self, dato):
         if not self.verificarExisteV(dato):
@@ -144,4 +148,185 @@ class grafo:
                 print("La arista con menor peso es: ")
                 print(f"{b.getOrigen()} - {b.getPeso()} - {b.getDestino()}")
 
-    
+    # -------------------
+
+    def RecorridoProfundidad(self, dato):  # dato es en que vertice empieza el recorrido
+        if dato in self.VisistadosCp:
+            return
+        else:
+            Vertice = self.obtenerOrigen(dato)
+            if Vertice is not None:
+                self.VisistadosCp.append(Vertice.getDato())
+                for dato in Vertice.getListaAdyacentes():
+                    self.RecorridoProfundidad(dato)
+
+    def getVisitadosp(self):
+        return self.VisistadosCp
+
+    def getVisitadosca(self):
+        return self.VisistadosCa
+
+    def obtenerOrigen(self, v):
+        for n in self.listaVertices:
+            if n == v:
+                return n
+
+    def Amplitud(self, origen):
+        VisitadosA = []
+        Cola = deque()
+        Vertice = self.obtenerOrigen(origen)
+        if Vertice is not None:
+            VisitadosA.append(origen)
+            Cola.append(Vertice)
+            while Cola:
+                elemento = Cola.popleft()
+                for Adyacencia in elemento.getListaAdyacentes():
+                    if Adyacencia not in VisitadosA:
+                        Vertice = self.obtenerOrigen(Adyacencia)
+                        VisitadosA.append(Adyacencia)
+                        Cola.append(Vertice)
+        return VisitadosA
+
+    # Algoritmo de PRIM
+
+    def Ordenar(self, Aristas):
+        for i in range(len(Aristas)):
+            for j in range(len(Aristas)):
+                if Aristas[i].getPeso() < Aristas[j].getPeso():  # menor a mayor
+                    temp = Aristas[i]
+                    Aristas[i] = Aristas[j]
+                    Aristas[j] = temp
+
+    # Prim para grafos dirigidos un solo sentido
+    def Prim(self):
+        CopiaAristas = copy(self.listaAristas)  # copia de las aristas
+        Conjunto = []
+        AristaPrim = []  # creo una lista con las aristas
+        AristasTemp = []  # Todas las adyacencias
+
+        self.Dobles(CopiaAristas)
+
+        self.Ordenar(CopiaAristas)  # ordeno las aristas
+        # self.Repetidas(CopiaAristas)#elimino los caminos dobles, ya que no nos interesan las dobles conexiones
+
+        menor = CopiaAristas[0]
+        Conjunto.append(menor.getOrigen())
+        pos = True
+        while pos:  # nuevo
+            for Vertice in Conjunto:
+                self.Algoritmo(
+                    CopiaAristas, AristaPrim, Conjunto, Vertice, AristasTemp, pos
+                )
+            if len(Conjunto) == len(self.listaVertices):  # nuevo
+                pos = False  # nuevo
+        print("los vertices visitados fueron: {0} ".format(Conjunto))
+
+        for dato in AristasTemp:
+            print(
+                "temporal Origen: {0} destino: {1} peso: {2}".format(
+                    dato.getOrigen(), dato.getDestino(), dato.getPeso()
+                )
+            )
+        print("Aristas de prim")
+        for dato in AristaPrim:
+            print(
+                "Origen: {0} destino: {1} peso: {2}".format(
+                    dato.getOrigen(), dato.getDestino(), dato.getPeso()
+                )
+            )
+
+    def Algoritmo(self, CopiaAristas, AristaPrim, Conjunto, Vertice, AristasTemp, pos):
+        ciclo = False
+        # lo debo buscar en la lista de arista en ambas direcciones
+        self.AgregarAristasTemp(CopiaAristas, Vertice, Conjunto, AristasTemp)
+        menor = self.BuscarmenorTemp(
+            AristasTemp, AristaPrim, CopiaAristas
+        )  # obtengo la arista menor de los nodos que he visitado
+        if menor is not None:
+            if (
+                menor.getOrigen() in Conjunto and menor.getDestino() in Conjunto
+            ):  # es porque cierra un ciclo
+                ciclo = True
+
+            if ciclo is False:  # si es falso es porq puede ingresar
+                if not menor.getDestino() in Conjunto:
+                    Conjunto.append(menor.getDestino())
+                AristaPrim.append(menor)
+
+    def AgregarAristasTemp(self, CopiaAristas, Vertice, Conjunto, AristasTemp):
+        for Aristas in CopiaAristas:
+            if Vertice == Aristas.getOrigen():
+                if self.verificarTemp(Aristas, AristasTemp):  # si no esta
+                    AristasTemp.append(Aristas)  # Agrego todas las aristas
+
+    def BuscarmenorTemp(self, AristasTemp, AristaPrim, CopiaAristas):
+        menor = CopiaAristas[
+            len(CopiaAristas) - 1
+        ]  # el mayor como esta ordenado, es el ultimo
+        for i in range(len(AristasTemp)):
+            if AristasTemp[i].getPeso() <= menor.getPeso():
+                if self.BuscarPrim(AristaPrim, AristasTemp[i]) is False:
+                    menor = AristasTemp[i]
+
+        AristasTemp.pop(AristasTemp.index(menor))
+        return menor
+
+    def BuscarPrim(self, AristaPrim, menor):
+        for Aristap in AristaPrim:
+            if (
+                Aristap.getOrigen() == menor.getOrigen()
+                and Aristap.getDestino() == menor.getDestino()
+            ):
+                return True
+            if (
+                Aristap.getOrigen() == menor.getDestino()
+                and Aristap.getDestino() == menor.getOrigen()
+            ):
+                return True
+
+        return False
+
+    def verificarTemp(self, Aristan, AristasTemp):
+        for Arista in AristasTemp:
+            if (
+                Arista.getOrigen() == Aristan.getOrigen()
+                and Arista.getDestino() == Aristan.getDestino()
+            ):
+                return False
+
+        return True
+
+        ##Elimina los repetidos porque en prim no toma en cuenta las direcciones del grafo, por consiguiente con un enlace es mas que suficiente
+
+    def Repetidas(self, CopiaAristas):
+        for elemento in CopiaAristas:
+            for i in range(len(CopiaAristas)):
+                if (
+                    elemento.getOrigen() == CopiaAristas[i].getDestino()
+                    and elemento.getDestino() == CopiaAristas[i].getOrigen()
+                ):
+                    CopiaAristas.pop(i)  # elimino
+                    break
+
+    def Dobles(self, CopiaAristas):
+        # Este método convierte el grafo dirigido
+        # a un grafo no dirigido
+        doble = False
+        for elemento in CopiaAristas:
+            for i in range(len(CopiaAristas)):
+                # Compara el destino con el origen
+                # Y el origen con el destino
+                if (
+                    elemento.getOrigen() == CopiaAristas[i].getDestino()
+                    and elemento.getDestino() == CopiaAristas[i].getOrigen()
+                ):
+                    doble = True
+            # Si no hay doble arista
+            # crea la arista en doble sentido (Invirtiendo origen y destino)
+            if doble is False:
+                CopiaAristas.append(
+                    arista(
+                        elemento.getDestino(), elemento.getOrigen(), elemento.getPeso()
+                    )
+                )
+            doble = False
