@@ -25,4 +25,5 @@ G.ingresarAristas("Medellin", "Quimbaya", 4)
 # G.mayorPeso()
 # G.menorPeso()
 
-G.Prim()
+# G.Prim()
+G.Borukva()
